@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Repositories</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 50%;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px gray;
+        }
+        input {
+            width: 80%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background: blue;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        .error {
+            color: red;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>GitHub Repositories Fetcher</h2>
+        <input type="text" id="username" placeholder="Enter GitHub Username">
+        <button onclick="fetchRepos()">Fetch Repositories</button>
+        <p class="error" id="errorMessage"></p>
+        
+        <table id="repoTable">
+            <thead>
+                <tr>
+                    <th>Repository Name</th>
+                    <th>Description</th>
+                    <th>Language</th>
+                    <th>Stars</th>
+                </tr>
+            </thead>
+            <tbody id="repoList"></tbody>
+        </table>
+    </div>
+
+    <script>
+        function fetchRepos() {
+            let username = document.getElementById("username").value;
+            let repoList = document.getElementById("repoList");
+            let errorMessage = document.getElementById("errorMessage");
+
+            // Clear previous results
+            repoList.innerHTML = "";
+            errorMessage.innerText = "";
+
+            if (username.trim() === "") {
+                errorMessage.innerText = "Please enter a GitHub username!";
+                return;
+            }
+
+            let url = `https://api.github.com/users/${username}/repos`;
+
+            fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("User not found or API error.");
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.length === 0) {
+                    errorMessage.innerText = "No repositories found for this user.";
+                    return;
+                }
+
+                data.forEach(repo => {
+                    let row = `
+                        <tr>
+                            <td><a href="${repo.html_url}" target="_blank">${repo.name}</a></td>
+                            <td>${repo.description || "No description"}</td>
+                            <td>${repo.language || "N/A"}</td>
+                            <td>${repo.stargazers_count}</td>
+                        </tr>
+                    `;
+                    repoList.innerHTML += row;
+                });
+            })
+            .catch(error => {
+                errorMessage.innerText = error.message;
+            });
+        }
+    </script>
+
+</body>
+</html>
